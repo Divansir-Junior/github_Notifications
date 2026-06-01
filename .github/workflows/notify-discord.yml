@@ -1,51 +1,29 @@
-name: Automacoes GitHub
+name: Notify Discord
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - "feat/**"
-      - "fix/**"
-
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - closed
-
-  issues:
-    types:
-      - opened
-      - closed
-      - reopened
-      - assigned
+  workflow_call:
+    inputs:
+      title:
+        required: true
+        type: string
+      message:
+        required: true
+        type: string
+    secrets:
+      DISCORD_WEBHOOK:
+        required: true
 
 jobs:
-  commits:
-    if: github.event_name == 'push'
-    uses: Divansir-Junior/github-automations/.github/workflows/notify-discord.yml@main
-    with:
-      title: "Novo commit"
-      message: "Branch: ${{ github.ref_name }}\nCommit: ${{ github.event.head_commit.message }}\nAutor: ${{ github.actor }}\nLink: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-    secrets:
-      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_COMMITS }}
-
-  pr:
-    if: github.event_name == 'pull_request'
-    uses: Divansir-Junior/github-automations/.github/workflows/notify-discord.yml@main
-    with:
-      title: "Pull request atualizado"
-      message: "PR: ${{ github.event.pull_request.title }}\nAutor: ${{ github.actor }}\nStatus: ${{ github.event.action }}\nLink: ${{ github.event.pull_request.html_url }}"
-    secrets:
-      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PR }}
-
-  issues:
-    if: github.event_name == 'issues'
-    uses: Divansir-Junior/github-automations/.github/workflows/notify-discord.yml@main
-    with:
-      title: "Issue atualizada"
-      message: "Issue: ${{ github.event.issue.title }}\nAutor: ${{ github.actor }}\nStatus: ${{ github.event.action }}\nLink: ${{ github.event.issue.html_url }}"
-    secrets:
-      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_ISSUES }}
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send to Discord
+        run: |
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "${{ inputs.title }}",
+              "description": "${{ inputs.message }}"
+            }]
+          }'
