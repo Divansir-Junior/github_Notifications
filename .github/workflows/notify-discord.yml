@@ -18,12 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send to Discord
+        env:
+          TITLE: ${{ inputs.title }}
+          MESSAGE: ${{ inputs.message }}
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          curl -X POST "$WEBHOOK" \
           -H "Content-Type: application/json" \
-          -d '{
-            "embeds": [{
-              "title": "${{ inputs.title }}",
-              "description": "${{ inputs.message }}"
-            }]
-          }'
+          -d "{\"embeds\": [{\"title\": \"$TITLE\", \"description\": \"$MESSAGE\"}]}"
