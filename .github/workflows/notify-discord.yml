@@ -6,9 +6,11 @@ on:
       title:
         required: true
         type: string
+
       message:
         required: true
         type: string
+
     secrets:
       DISCORD_WEBHOOK:
         required: true
@@ -16,12 +18,8 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    steps:
-      - name: Debug webhook
-        env:
-          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run: echo "Tamanho ${#WEBHOOK} URL $WEBHOOK"
 
+    steps:
       - name: Send to Discord
         env:
           TITLE: ${{ inputs.title }}
@@ -29,8 +27,39 @@ jobs:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           python3 << 'EOF'
-          import json, urllib.request, os
-          data = json.dumps({"embeds": [{"title": os.environ["TITLE"], "description": os.environ["MESSAGE"]}]})
-          req = urllib.request.Request(os.environ["WEBHOOK"], data=data.encode(), headers={"Content-Type": "application/json"})
-          urllib.request.urlopen(req)
+          import json
+          import os
+          import urllib.request
+          import urllib.error
+          import sys
+
+          payload = {
+              "content": None,
+              "embeds": [
+                  {
+                      "title": os.environ["TITLE"],
+                      "description": os.environ["MESSAGE"]
+                  }
+              ]
+          }
+
+          data = json.dumps(payload).encode("utf-8")
+
+          req = urllib.request.Request(
+              os.environ["WEBHOOK"],
+              data=data,
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "GitHub-Actions-Discord-Webhook"
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(req) as response:
+                  print("Discord status:", response.status)
+          except urllib.error.HTTPError as e:
+              print("Discord error status:", e.code)
+              print("Discord response:", e.read().decode("utf-8"))
+              sys.exit(1)
           EOF
