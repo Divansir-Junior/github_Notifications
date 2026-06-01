@@ -20,16 +20,17 @@ jobs:
       - name: Debug webhook
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run: echo "URL começa com: ${WEBHOOK:0:30}"
+        run: echo "URL comeca com ${WEBHOOK:0:30}"
+
       - name: Send to Discord
         env:
           TITLE: ${{ inputs.title }}
           MESSAGE: ${{ inputs.message }}
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          python3 -c "
+          python3 << 'EOF'
           import json, urllib.request, os
-          data = json.dumps({'embeds': [{'title': os.environ['TITLE'], 'description': os.environ['MESSAGE']}]})
-          req = urllib.request.Request(os.environ['WEBHOOK'], data=data.encode(), headers={'Content-Type': 'application/json'})
+          data = json.dumps({"embeds": [{"title": os.environ["TITLE"], "description": os.environ["MESSAGE"]}]})
+          req = urllib.request.Request(os.environ["WEBHOOK"], data=data.encode(), headers={"Content-Type": "application/json"})
           urllib.request.urlopen(req)
-          "
+          EOF
