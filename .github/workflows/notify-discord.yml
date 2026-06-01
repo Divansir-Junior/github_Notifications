@@ -17,6 +17,10 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug webhook
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: echo "URL começa com: ${WEBHOOK:0:30}"
       - name: Send to Discord
         env:
           TITLE: ${{ inputs.title }}
