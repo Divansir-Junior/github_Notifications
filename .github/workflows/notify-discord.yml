@@ -20,7 +20,7 @@ jobs:
       - name: Debug webhook
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run: echo "URL starts with ${WEBHOOK:0:30}"
+        run: echo "Tamanho ${#WEBHOOK} URL $WEBHOOK"
 
       - name: Send to Discord
         env:
