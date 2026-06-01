@@ -23,6 +23,9 @@ jobs:
           MESSAGE: ${{ inputs.message }}
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -X POST "$WEBHOOK" \
-          -H "Content-Type: application/json" \
-          -d "{\"embeds\": [{\"title\": \"$TITLE\", \"description\": \"$MESSAGE\"}]}"
+          python3 -c "
+          import json, urllib.request, os
+          data = json.dumps({'embeds': [{'title': os.environ['TITLE'], 'description': os.environ['MESSAGE']}]})
+          req = urllib.request.Request(os.environ['WEBHOOK'], data=data.encode(), headers={'Content-Type': 'application/json'})
+          urllib.request.urlopen(req)
+          "
